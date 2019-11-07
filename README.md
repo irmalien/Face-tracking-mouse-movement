@@ -1,1 +1,1 @@
-# Ruby_experimental
+# Python computer vision experiments
