@@ -1,13 +1,14 @@
 # TODO: Add pipenv package manager
 import numpy as np
 import cv2
-import pyautogui
+# import pyautogui
 import keyboard
-from helpers import getfraction, find_average, map
+from position import Position
+from interaction import Interaction
 
 FACE_CASCADE = cv2.CascadeClassifier(
     './data/haarcascade_frontalface_default.xml')
-MOUSE_SMOOTHNESS = 5
+SMOOTH_POSITION = 5
 KEYBOARD_PRECISION = 10
 SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
 CAPTURE_WIDTH = 640
@@ -15,54 +16,29 @@ CAPTURE_HEIGHT = 480
 CAPTURE = cv2.VideoCapture(0)
 size = CAPTURE.set(3, CAPTURE_WIDTH)
 size = CAPTURE.set(4, CAPTURE_HEIGHT)
+
 move_mouse = False
 move_keys = False
 show_capture = True
-movement_history = []
+
+position = Position(SMOOTH_POSITION,
+                    CAPTURE_WIDTH,
+                    CAPTURE_HEIGHT,
+                    SCREEN_WIDTH,
+                    SCREEN_HEIGHT)
+
+interaction = Interaction(KEYBOARD_PRECISION,
+                          SCREEN_WIDTH,
+                          SCREEN_HEIGHT)
 
 
 def position_on_screen(selected_face):
-    pos_x_screen = getfraction(selected_face[5], CAPTURE_WIDTH, SCREEN_WIDTH)
-    pos_y_screen = getfraction(selected_face[6], CAPTURE_HEIGHT, SCREEN_HEIGHT)
-    smooth_movement(pos_x_screen, pos_y_screen, MOUSE_SMOOTHNESS)
-    pos = find_average(movement_history)
+    pos = position.smooth_resized_position(selected_face[5],
+                                           selected_face[6])
     if move_mouse:
-        pyautogui.moveTo(pos[0], pos[1])
+        interaction.move_mouse(pos[0], pos[1])
     if move_keys:
-        move_with_keyboard(pos[0], pos[1], SCREEN_WIDTH, SCREEN_HEIGHT)
-
-
-def smooth_movement(x, y, lenght=5):
-    movement_history.append([x, y])
-    if len(movement_history) > lenght:
-        movement_history.pop(0)
-    return
-
-
-def move_with_keyboard(x, y, width, height):
-    number_of_keypress = KEYBOARD_PRECISION
-    x = x - (width / 2)
-    y = y - (height / 2)
-    area_x = 'left' if x < 0 else 'right'
-    area_y = 'up' if y < 0 else 'down'
-
-    if area_x == 'left':
-        steps_x = map(x, -(width / 2), 0, number_of_keypress, 0)
-    else:
-        steps_x = map(x, 0, width / 2, 0, number_of_keypress)
-
-    steps_x = int(round(steps_x))
-    for times in range(steps_x):
-        pyautogui.press(area_x)
-
-    if area_y == 'up':
-        steps_y = map(y, -(height / 2), 0, number_of_keypress, 0)
-    else:
-        steps_y = map(y, 0, height / 2, 0, number_of_keypress)
-
-    steps_y = int(round(steps_y * 2))
-    for times in range(steps_y):
-        pyautogui.press(area_y)
+        interaction.move_keyboard(pos[0], pos[1])
 
 
 # TODO: Match loop speed to fps refresh rate with Pyglet
