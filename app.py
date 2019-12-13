@@ -6,6 +6,7 @@ import keyboard
 from position import Position
 from interaction import Interaction
 from draw import Draw
+from framerate import Framerate
 
 print('program started')
 FACE_CASCADE = cv2.CascadeClassifier(
@@ -17,8 +18,10 @@ CAPTURE_WIDTH = 640
 CAPTURE_HEIGHT = 480
 CAPTURE_CROP_FACTOR = 0.7
 CAPTURE = cv2.VideoCapture(0)
+
 size = CAPTURE.set(3, CAPTURE_WIDTH)
 size = CAPTURE.set(4, CAPTURE_HEIGHT)
+font = cv2.FONT_HERSHEY_SIMPLEX
 
 move_mouse = False
 move_keys = False
@@ -37,6 +40,8 @@ interaction = Interaction(KEYBOARD_PRECISION,
 
 draw = Draw()
 
+fps = Framerate()
+
 
 def position_on_screen(selected_face):
     pos = position.smooth_resized_position(selected_face[5],
@@ -49,6 +54,7 @@ def position_on_screen(selected_face):
     # TODO: Match loop speed to fps refresh rate with Pyglet
     # TODO: Add window preview of object position on screen
 while(True):
+    fps.counter()           # 1 frame per second
     # Set key listeners
     # TODO: Find a better solution, or perhaps use cv solution if possible
     if keyboard.is_pressed('m'):
@@ -103,6 +109,7 @@ while(True):
             draw.selected_face_area(gray, selected_face)
             draw.cursor_location(gray, position.crop_screen['pos'])
         draw.capture_crop_area(gray, position.crop_screen)
+        draw.fps_counter(gray, fps.actual_fps)
         cv2.imshow('frame', gray)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):

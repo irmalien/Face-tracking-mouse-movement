@@ -95,7 +95,7 @@ class Position:
     def __resize_pos_x(self, x):
         position_in_input = x
         input = self.crop_screen['w']
-        output = self.output_screen['h']
+        output = self.output_screen['w']
         position_in_output = (position_in_input * output) / input
         return position_in_output
 
