@@ -5,7 +5,9 @@ import pyautogui
 import keyboard
 from position import Position
 from interaction import Interaction
+from draw import Draw
 
+print('program started')
 FACE_CASCADE = cv2.CascadeClassifier(
     './data/haarcascade_frontalface_default.xml')
 SMOOTH_POSITION = 5
@@ -21,7 +23,6 @@ size = CAPTURE.set(4, CAPTURE_HEIGHT)
 move_mouse = False
 move_keys = False
 show_capture = True
-loop_enabled = True
 
 position = Position(SMOOTH_POSITION,
                     CAPTURE_WIDTH,
@@ -34,6 +35,8 @@ interaction = Interaction(KEYBOARD_PRECISION,
                           SCREEN_WIDTH,
                           SCREEN_HEIGHT)
 
+draw = Draw()
+
 
 def position_on_screen(selected_face):
     pos = position.smooth_resized_position(selected_face[5],
@@ -43,27 +46,11 @@ def position_on_screen(selected_face):
     if move_keys:
         interaction.move_keyboard(pos[0], pos[1])
 
-
-# def listen_keypress():
-    # breakpoint()
-    # if keyboard.is_pressed('m'):
-    #     breakpoint()
-    #     move_mouse = False if move_mouse else True
-    #     print('move mouse', move_mouse)
-    # if keyboard.is_pressed('k'):
-    #     move_keys = False if move_keys else True
-    #     print('move keyboard', move_keys)
-    # if keyboard.is_pressed('c'):
-    #     show_capture = False if move_keys else True
-    #     print('show_capture', show_capture)
-    # if keyboard.is_pressed('q'):
-    #     print('Attempt to exit loop')
-    #     loop_enabled = False
-
     # TODO: Match loop speed to fps refresh rate with Pyglet
     # TODO: Add window preview of object position on screen
 while(True):
     # Set key listeners
+    # TODO: Find a better solution, or perhaps use cv solution if possible
     if keyboard.is_pressed('m'):
         move_mouse = False if move_mouse else True
         print('move mouse', move_mouse)
@@ -73,7 +60,7 @@ while(True):
     if keyboard.is_pressed('c'):
         show_capture = False if move_keys else True
         print('show_capture', show_capture)
-    if keyboard.is_pressed('q'):
+    if keyboard.is_pressed('z'):
         print('Attempt to exit')
         break
 
@@ -112,17 +99,14 @@ while(True):
         position_on_screen(selected_face)
 
     if show_capture:
-        # Cant draw rectangle and get type errors
-        # if selected_face:
-        #     start_point = (int(selected_face[1]), int(selected_face[2]))
-        #     end_point = (int(selected_face[1] + selected_face[3]),
-        #                  int(selected_face[2] + selected_face[4]))
-        #     breakpoint()
-        #     cv2.rectangle('frame', start_point, end_point, (255, 0, 0), 2)
+        if selected_face:
+            draw.selected_face_area(gray, selected_face)
+            draw.cursor_location(gray, position.crop_screen['pos'])
+        draw.capture_crop_area(gray, position.crop_screen)
         cv2.imshow('frame', gray)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
 
 # When everything done, release the capture

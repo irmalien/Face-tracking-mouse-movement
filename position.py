@@ -7,76 +7,115 @@ class Position:
                  output_screen_width,
                  output_screen_height,
                  capture_crop_factor):
-        self.history = []
         self.smooth_intensity = smooth_intensity
-        self.input_screen_width = input_screen_width
-        self.input_screen_height = input_screen_height
-        self.output_screen_width = output_screen_width
-        self.output_screen_height = output_screen_height
-        self.capture_crop_factor = capture_crop_factor
-        self.capture_crop_size = self.__apply_crop_factor()
+        self.input_screen = {
+            "w": input_screen_width,
+            "h": input_screen_height,
+            "pos": {
+                "x": None,
+                "y": None
+            }
+        }
+        self.crop_screen = {
+            "scale": capture_crop_factor,
+            "w": None,
+            "h": None,
+            "margin_x": None,
+            "margin_y": None,
+            "pos": {
+                "x": None,
+                "y": None
+            }
+        }
+        self.output_screen = {
+            "w": output_screen_width,
+            "h": output_screen_height,
+            "history": [],
+            "pos": {
+                "x": None,
+                "y": None
+            }
+        }
+        self.__populate_crop_screen_params()
 
     def smooth_resized_position(self, x, y):
-        self.resized_position(x, y)
-        self.__save_position()
-        return self.__find_average_position()
+        self.input_screen['pos'] = {"x": x, "y": y}
+        self.output_screen['pos'] = self.__resize_input_pos(
+            self.input_screen['pos'])
+        self.__save_pos_in_history(self.output_screen['pos'])
+        smooth_position = self.__find_average_in_history()
+        return smooth_position
 
-    def resized_position(self, x, y):
-        self.x = x
-        self.y = y
-        self.__limit_position_in_crop_size()
-        self.__define_position_in_crop_size()
-        self.__resize_position_x()
-        self.__resize_position_y()
-        return [self.x, self.y]
+    def __resize_input_pos(self, pos):
+        self.crop_screen['pos'] = self.__crop_input_pos(pos)
+        adjusted_pos = self.__adjust_pos_in_crop_screen(self.crop_screen)
+        output_screen_pos = self.__resize_pos(adjusted_pos)
+        return output_screen_pos
 
-    def __apply_crop_factor(self):
-        crop_width = self.input_screen_width * self.capture_crop_factor
-        crop_height = self.input_screen_height * self.capture_crop_factor
-        margin_x = (self.input_screen_width - crop_width) / 2
-        margin_y = (self.input_screen_height - crop_height) / 2
-        return [margin_x, margin_y, crop_width, crop_height]
+    def __populate_crop_screen_params(self):
+        width = self.input_screen['w'] * self.crop_screen['scale']
+        height = self.input_screen['h'] * self.crop_screen['scale']
+        margin_x = (self.input_screen['w'] - width) / 2
+        margin_y = (self.input_screen['h'] - height) / 2
+        self.crop_screen['w'] = int(width)
+        self.crop_screen['h'] = int(height)
+        self.crop_screen['margin_x'] = int(margin_x)
+        self.crop_screen['margin_y'] = int(margin_y)
 
-    def __define_position_in_crop_size(self):
-        self.x = self.x - self.capture_crop_size[0]
-        self.y = self.y - self.capture_crop_size[1]
+    def __adjust_pos_in_crop_screen(self, crop_screen):
+        x = crop_screen['pos']['x']
+        y = crop_screen['pos']['y']
+        x -= crop_screen['margin_x']
+        y -= crop_screen['margin_y']
+        return {"x": x, "y": y}
 
-    def __limit_position_in_crop_size(self):
-        crop_x_start = self.capture_crop_size[0]
-        crop_x_end = self.capture_crop_size[0] + self.capture_crop_size[2]
-        crop_y_start = self.capture_crop_size[1]
-        crop_y_end = self.capture_crop_size[1] + self.capture_crop_size[3]
-        if self.x < crop_x_start:
-            self.x = crop_x_start
-        if self.x > crop_x_end:
-            self.x = crop_x_end
-        if self.y < crop_y_start:
-            self.y = crop_y_start
-        if self.y > crop_y_end:
-            self.y = crop_y_end
+    def __crop_input_pos(self, pos):
+        x = pos['x']
+        y = pos['y']
+        crop = self.crop_screen
+        crop_x_start = crop['margin_x']
+        crop_x_end = crop['margin_x'] + crop['w']
+        crop_y_start = crop['margin_y']
+        crop_y_end = crop['margin_y'] + crop['h']
+        if x < crop_x_start:
+            x = crop_x_start
+        if x > crop_x_end:
+            x = crop_x_end
+        if y < crop_y_start:
+            y = crop_y_start
+        if y > crop_y_end:
+            y = crop_y_end
+        return {"x": x, "y": y}
 
-    def __resize_position_x(self):
-        position_in_input = self.x
-        input = self.capture_crop_size[2]
-        output = self.output_screen_width
+    def __resize_pos(self, pos):
+        x = self.__resize_pos_x(pos['x'])
+        y = self.__resize_pos_y(pos['y'])
+        return {"x": x, "y": y}
+
+    def __resize_pos_x(self, x):
+        position_in_input = x
+        input = self.crop_screen['w']
+        output = self.output_screen['h']
         position_in_output = (position_in_input * output) / input
-        self.x = position_in_output
+        return position_in_output
 
-    def __resize_position_y(self):
-        position_in_input = self.y
-        input = self.capture_crop_size[3]
-        output = self.output_screen_height
+    def __resize_pos_y(self, y):
+        position_in_input = y
+        input = self.crop_screen['h']
+        output = self.output_screen['h']
         position_in_output = (position_in_input * output) / input
-        self.y = position_in_output
+        return position_in_output
 
-    def __save_position(self):
-        self.history.append([self.x, self.y])
-        if len(self.history) > self.smooth_intensity:
-            self.history.pop(0)
+    def __save_pos_in_history(self, pos):
+        x = pos['x']
+        y = pos['y']
+        self.output_screen['history'].append([x, y])
+        if len(self.output_screen['history']) > self.smooth_intensity:
+            self.output_screen['history'].pop(0)
             return
 
-    def __find_average_position(self):
-        list = self.history
+    def __find_average_in_history(self):
+        list = self.output_screen['history']
         ncols = len(list[0])
         nrows = len(list)
         # Sum all elements in each column:
