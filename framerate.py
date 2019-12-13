@@ -3,7 +3,7 @@ import time
 
 class Framerate:
 
-    def __init__(self, fps):
+    def __init__(self, fps=30):
         self.__fps = fps
         self.__frame = 0
         self.__start = None

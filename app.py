@@ -9,11 +9,13 @@ from draw import Draw
 from framerate import Framerate
 
 print('program started')
+pyautogui.PAUSE = 0.001
 FACE_CASCADE = cv2.CascadeClassifier(
     './data/haarcascade_frontalface_default.xml')
-SMOOTH_POSITION = 5
-KEYBOARD_PRECISION = 10
+SMOOTH_POSITION = 16
+KEYBOARD_PRECISION = 8
 SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
+#SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
 CAPTURE_WIDTH = 640
 CAPTURE_HEIGHT = 480
 CAPTURE_CROP_FACTOR = 0.7
