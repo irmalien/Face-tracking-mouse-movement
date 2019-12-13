@@ -41,7 +41,7 @@ class Interaction:
     def move_mouse(self, x, y):
         pyautogui.moveTo(x, y)
 
-    def __map(value, start1, stop1, start2, stop2):
+    def __map(self, value, start1, stop1, start2, stop2):
         newValue = ((value - start1) / (stop1 - start1)) * \
             (stop2 - start2) + start2
         return newValue
