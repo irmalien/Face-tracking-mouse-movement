@@ -1,7 +1,7 @@
 # TODO: Add pipenv package manager
 import numpy as np
 import cv2
-# import pyautogui
+import pyautogui
 import keyboard
 from position import Position
 from interaction import Interaction
@@ -13,6 +13,7 @@ KEYBOARD_PRECISION = 10
 SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
 CAPTURE_WIDTH = 640
 CAPTURE_HEIGHT = 480
+CAPTURE_CROP_FACTOR = 0.7
 CAPTURE = cv2.VideoCapture(0)
 size = CAPTURE.set(3, CAPTURE_WIDTH)
 size = CAPTURE.set(4, CAPTURE_HEIGHT)
@@ -20,12 +21,14 @@ size = CAPTURE.set(4, CAPTURE_HEIGHT)
 move_mouse = False
 move_keys = False
 show_capture = True
+loop_enabled = True
 
 position = Position(SMOOTH_POSITION,
                     CAPTURE_WIDTH,
                     CAPTURE_HEIGHT,
                     SCREEN_WIDTH,
-                    SCREEN_HEIGHT)
+                    SCREEN_HEIGHT,
+                    CAPTURE_CROP_FACTOR)
 
 interaction = Interaction(KEYBOARD_PRECISION,
                           SCREEN_WIDTH,
@@ -41,8 +44,24 @@ def position_on_screen(selected_face):
         interaction.move_keyboard(pos[0], pos[1])
 
 
-# TODO: Match loop speed to fps refresh rate with Pyglet
-# TODO: Add window preview of object position on screen
+# def listen_keypress():
+    # breakpoint()
+    # if keyboard.is_pressed('m'):
+    #     breakpoint()
+    #     move_mouse = False if move_mouse else True
+    #     print('move mouse', move_mouse)
+    # if keyboard.is_pressed('k'):
+    #     move_keys = False if move_keys else True
+    #     print('move keyboard', move_keys)
+    # if keyboard.is_pressed('c'):
+    #     show_capture = False if move_keys else True
+    #     print('show_capture', show_capture)
+    # if keyboard.is_pressed('q'):
+    #     print('Attempt to exit loop')
+    #     loop_enabled = False
+
+    # TODO: Match loop speed to fps refresh rate with Pyglet
+    # TODO: Add window preview of object position on screen
 while(True):
     # Set key listeners
     if keyboard.is_pressed('m'):
@@ -93,7 +112,15 @@ while(True):
         position_on_screen(selected_face)
 
     if show_capture:
+        # Cant draw rectangle and get type errors
+        # if selected_face:
+        #     start_point = (int(selected_face[1]), int(selected_face[2]))
+        #     end_point = (int(selected_face[1] + selected_face[3]),
+        #                  int(selected_face[2] + selected_face[4]))
+        #     breakpoint()
+        #     cv2.rectangle('frame', start_point, end_point, (255, 0, 0), 2)
         cv2.imshow('frame', gray)
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
