@@ -11,34 +11,34 @@ from framerate import Framerate
 print('program started')
 pyautogui.PAUSE = 0.001
 FACE_CASCADE = cv2.CascadeClassifier(
-    './data/haarcascade_frontalface_default.xml')
-SMOOTH_POSITION = 16
-KEYBOARD_PRECISION = 8
-SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
-#SCREEN_WIDTH, SCREEN_HEIGHT = pyautogui.size()
-CAPTURE_WIDTH = 640
-CAPTURE_HEIGHT = 480
-CAPTURE_CROP_FACTOR = 0.7
+    './data/haarcascade_frontalface_alt2.xml')
+SMOOTH_INTENSITY = 16
+KEYPRESS_PRECISION = 8
+INPUT_SCREEN = {
+    'w': 640,
+    'h': 480
+}
+CROP_SCREEN = {
+    'scale': 0.7
+}
+OUTPUT_SCREEN = {
+    'w': pyautogui.size()[0],
+    'h': pyautogui.size()[1]
+}
 CAPTURE = cv2.VideoCapture(0)
-
-size = CAPTURE.set(3, CAPTURE_WIDTH)
-size = CAPTURE.set(4, CAPTURE_HEIGHT)
-font = cv2.FONT_HERSHEY_SIMPLEX
+CAPTURE.set(3, INPUT_SCREEN['w'])
+CAPTURE.set(4, INPUT_SCREEN['h'])
 
 move_mouse = False
 move_keys = False
 show_capture = True
 
-position = Position(SMOOTH_POSITION,
-                    CAPTURE_WIDTH,
-                    CAPTURE_HEIGHT,
-                    SCREEN_WIDTH,
-                    SCREEN_HEIGHT,
-                    CAPTURE_CROP_FACTOR)
+position = Position(INPUT_SCREEN,
+                    OUTPUT_SCREEN,
+                    CROP_SCREEN,
+                    SMOOTH_INTENSITY)
 
-interaction = Interaction(KEYBOARD_PRECISION,
-                          SCREEN_WIDTH,
-                          SCREEN_HEIGHT)
+interaction = Interaction(OUTPUT_SCREEN, KEYPRESS_PRECISION)
 
 draw = Draw()
 

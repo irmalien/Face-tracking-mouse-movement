@@ -1,23 +1,21 @@
 class Position:
 
     def __init__(self,
-                 smooth_intensity,
-                 input_screen_width,
-                 input_screen_height,
-                 output_screen_width,
-                 output_screen_height,
-                 capture_crop_factor):
+                 input_screen,
+                 output_screen,
+                 crop_screen,
+                 smooth_intensity=16):
         self.smooth_intensity = smooth_intensity
         self.input_screen = {
-            "w": input_screen_width,
-            "h": input_screen_height,
+            "w": input_screen['w'],
+            "h": input_screen['h'],
             "pos": {
                 "x": None,
                 "y": None
             }
         }
         self.crop_screen = {
-            "scale": capture_crop_factor,
+            "scale": crop_screen['scale'],
             "w": None,
             "h": None,
             "margin_x": None,
@@ -28,8 +26,8 @@ class Position:
             }
         }
         self.output_screen = {
-            "w": output_screen_width,
-            "h": output_screen_height,
+            "w": output_screen['w'],
+            "h": output_screen['h'],
             "history": [],
             "pos": {
                 "x": None,

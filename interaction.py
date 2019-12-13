@@ -4,12 +4,11 @@ import pyautogui
 class Interaction:
 
     def __init__(self,
-                 keypress_precision,
-                 output_screen_width,
-                 output_screen_height):
+                 output_screen,
+                 keypress_precision=8):
         self.keypress_precision = keypress_precision
-        self.output_screen_width = output_screen_width
-        self.output_screen_height = output_screen_height
+        self.output_screen_width = output_screen['w']
+        self.output_screen_height = output_screen['h']
 
     def move_keyboard(self, x, y):
         width = self.output_screen_width
